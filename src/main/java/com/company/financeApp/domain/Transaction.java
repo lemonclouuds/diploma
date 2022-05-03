@@ -1,5 +1,7 @@
 package com.company.financeApp.domain;
 
+import com.company.financeApp.domain.category.Category;
+import com.company.financeApp.domain.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +18,7 @@ import java.util.Objects;
 public class Transaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -31,10 +33,16 @@ public class Transaction {
     @JsonBackReference("user")
     private User user;
 
-    //add User to constructor?
-    public Transaction(String name, Double value) {
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
+    @JoinColumn(name = "category_id")
+    @JsonBackReference("category")
+    private Category category;
+
+    public Transaction(String name, Double value, User user, Category category) {
         this.name = name;
         this.value = value;
+        this.user = user;
+        this.category = category;
     }
 
     @Override
