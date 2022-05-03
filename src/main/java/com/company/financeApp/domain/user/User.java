@@ -1,5 +1,6 @@
-package com.company.financeApp.domain;
+package com.company.financeApp.domain.user;
 
+import com.company.financeApp.domain.Transaction;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
