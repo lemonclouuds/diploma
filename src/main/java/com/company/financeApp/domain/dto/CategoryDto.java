@@ -1,7 +1,6 @@
 package com.company.financeApp.domain.dto;
 
-import com.company.financeApp.domain.user.UserRole;
-import com.company.financeApp.domain.user.UserStatus;
+import com.company.financeApp.domain.category.CategoryType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,28 +10,22 @@ import java.util.Objects;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class CategoryDto {
 
     private Long id;
 
-    private String firstName;
+    private String name;
 
-    private String lastName;
+    private CategoryType categoryType;
 
-    private String email;
-
-    private String password;
-
-    private UserRole userRole;
-
-    private UserStatus userStatus;
+    private Long userId;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserDto userDto = (UserDto) o;
-        return Objects.equals(id, userDto.id);
+        CategoryDto that = (CategoryDto) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override
