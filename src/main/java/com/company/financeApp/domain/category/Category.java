@@ -1,6 +1,8 @@
 package com.company.financeApp.domain.category;
 
 import com.company.financeApp.domain.Transaction;
+import com.company.financeApp.domain.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,14 +33,20 @@ public class Category {
     @Column(name = "category_type", nullable = false)
     private CategoryType categoryType;
 
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
+    @JoinColumn(name = "user_id")
+    @JsonBackReference("user")
+    private User user;
+
     @ToString.Exclude
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference("category")
     private List<Transaction> transactions;
 
-    public Category(String name, CategoryType categoryType) {
+    public Category(String name, CategoryType categoryType, User user) {
         this.name = name;
         this.categoryType = categoryType;
+        this.user = user;
         this.transactions = new ArrayList<>();
     }
 

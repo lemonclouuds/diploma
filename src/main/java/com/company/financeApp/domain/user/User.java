@@ -1,9 +1,11 @@
 package com.company.financeApp.domain.user;
 
 import com.company.financeApp.domain.Transaction;
+import com.company.financeApp.domain.category.Category;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.List;
@@ -43,6 +45,12 @@ public class User {
     @Column(name = "user_status", nullable = false)
     private UserStatus userStatus;
 
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference("user")
+    private List<Category> categories;
+
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference("user")
     private List<Transaction> transactions;

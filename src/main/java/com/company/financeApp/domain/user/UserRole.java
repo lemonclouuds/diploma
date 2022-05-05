@@ -13,7 +13,7 @@ public enum UserRole {
             UserPermission.USER_READ, UserPermission.USER_WRITE,
             UserPermission.RATING_READ, UserPermission.RATING_WRITE)),
 
-    STUDENT(Set.of(UserPermission.TRANSACTION_READ, UserPermission.USER_READ,
+    USER(Set.of(UserPermission.TRANSACTION_READ, UserPermission.USER_READ,
             UserPermission.RATING_READ, UserPermission.RATING_WRITE));
 
     @Getter
