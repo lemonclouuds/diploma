@@ -1,9 +1,5 @@
 package com.company.financeApp.service;
 
-import com.company.financeApp.domain.Transaction;
-import com.company.financeApp.domain.category.Category;
-import com.company.financeApp.domain.dto.CategoryDto;
-import com.company.financeApp.domain.dto.TransactionDto;
 import com.company.financeApp.domain.dto.UserDto;
 import com.company.financeApp.domain.user.User;
 import com.company.financeApp.exception.EntityAlreadyExistsException;
@@ -19,9 +15,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static com.company.financeApp.constants.ExceptionMessage.CATEGORY_WITH_ID_NOT_FOUND;
-import static com.company.financeApp.constants.ExceptionMessage.TRANSACTION_WITH_ID_NOT_FOUND;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -36,7 +29,8 @@ public class UserService {
     }
 
     public User findById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(String.format(USER_WITH_ID_NOT_FOUND, userId)));
+        return userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException(String.format(USER_WITH_ID_NOT_FOUND, userId)));
     }
 
     public UserDto findDtoById(Long userId) {
@@ -48,6 +42,7 @@ public class UserService {
         User user = modelMapper.map(userDto, User.class);
         if (!userRepository.existsById(userDto.getId())) {
             user.setTransactions(new ArrayList<>());
+            //maybe pull default categories from db?
             user.setCategories(new ArrayList<>()); //? what about default categories?
             userRepository.save(user);
         } else {
@@ -82,27 +77,4 @@ public class UserService {
             deleteById(id);
         }
     }
-
-    @Transactional
-    public TransactionDto getUserTransactionById(Long userId, Long transactionId) {
-        Transaction found = findById(userId).getTransactions()
-                .stream()
-                .filter(transaction -> transactionId.equals(transaction.getId()))
-                .findFirst()
-                .orElseThrow(
-                        () -> new EntityNotFoundException(String.format(TRANSACTION_WITH_ID_NOT_FOUND, transactionId)));
-        return modelMapper.map(found, TransactionDto.class);
-    }
-
-    @Transactional
-    public CategoryDto getUserCategoryById(Long userId, Long categoryId) {
-        Category found = findById(userId).getCategories()
-                .stream()
-                .filter(category -> categoryId.equals(category.getId()))
-                .findFirst()
-                .orElseThrow(
-                        () -> new EntityNotFoundException(String.format(CATEGORY_WITH_ID_NOT_FOUND, categoryId)));
-        return modelMapper.map(found, CategoryDto.class);
-    }
-
 }

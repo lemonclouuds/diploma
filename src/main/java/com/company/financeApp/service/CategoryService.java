@@ -2,7 +2,8 @@ package com.company.financeApp.service;
 
 import com.company.financeApp.domain.category.Category;
 import com.company.financeApp.domain.dto.CategoryDto;
-import com.company.financeApp.domain.dto.TransactionDto;
+import com.company.financeApp.domain.user.User;
+import com.company.financeApp.exception.EntityAlreadyExistsException;
 import com.company.financeApp.helper.MapperHelper;
 import com.company.financeApp.repository.CategoryRepository;
 import com.company.financeApp.repository.TransactionRepository;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static com.company.financeApp.constants.ExceptionMessage.CATEGORY_WITH_ID_NOT_FOUND;
@@ -19,15 +22,15 @@ import static com.company.financeApp.constants.ExceptionMessage.CATEGORY_WITH_ID
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
-    private static ModelMapper modelMapper = new ModelMapper();
+    private static final ModelMapper modelMapper = new ModelMapper();
 
     private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
 
     private final UserService userService;
 
-    public List<Category> findAll() {
-        return categoryRepository.findAll();
+    public List<CategoryDto> findAll() {
+        return MapperHelper.mapList(categoryRepository.findAll(), CategoryDto.class);
     }
 
     public Category findById(Long categoryId) {
@@ -35,14 +38,67 @@ public class CategoryService {
                 () -> new EntityNotFoundException(String.format(CATEGORY_WITH_ID_NOT_FOUND, categoryId)));
     }
 
+    public CategoryDto findDtoById(Long categoryId) {
+        return modelMapper.map(findById(categoryId), CategoryDto.class);
+    }
+
     @Transactional
-    public List<TransactionDto> getCategoryTransactions(Long categoryId) {
-        return MapperHelper.mapList(transactionRepository.findAllByCategory_Id(categoryId), TransactionDto.class);
+    public CategoryDto create(CategoryDto categoryDto) {
+        Category category = modelMapper.map(categoryDto, Category.class);
+        if (!categoryRepository.existsById(categoryDto.getId())) {
+            User user = userService.findById(categoryDto.getUserId());
+            category.setUser(user);
+            category.setTransactions(new ArrayList<>());
+            categoryRepository.save(category);
+        } else {
+            throw new EntityAlreadyExistsException(String.format("User with id[%d] already exists",
+                    categoryDto.getId()));
+        }
+        return categoryDto;
+    }
+
+    @Transactional
+    public CategoryDto update(Long categoryId, CategoryDto categoryDto) {
+        Category category = modelMapper.map(categoryDto, Category.class);
+        category.setId(categoryId);
+        if (categoryRepository.existsById(categoryId)) {
+            User user = userService.findById(categoryDto.getUserId());
+            category.setUser(user);
+            categoryRepository.save(category);
+        } else {
+            throw new EntityNotFoundException(String.format(CATEGORY_WITH_ID_NOT_FOUND, categoryId));
+        }
+        return categoryDto;
+    }
+
+    @Transactional
+    public void deleteById(Long id) {
+        if (categoryRepository.existsById(id)) {
+            categoryRepository.deleteById(id);
+        }
+    }
+
+    @Transactional
+    public void deleteByIdIn(Collection<Long> ids) {
+        for (Long id : ids) {
+            deleteById(id);
+        }
     }
 
     @Transactional
     public List<CategoryDto> findAllByUserId(Long userId) {
         return MapperHelper.mapList(categoryRepository.findAllByUserId(userId), CategoryDto.class);
+    }
+
+    @Transactional
+    public CategoryDto getUserCategoryById(Long userId, Long categoryId) {
+        Category found = userService.findById(userId).getCategories()
+                .stream()
+                .filter(category -> categoryId.equals(category.getId()))
+                .findFirst()
+                .orElseThrow(
+                        () -> new EntityNotFoundException(String.format(CATEGORY_WITH_ID_NOT_FOUND, categoryId)));
+        return modelMapper.map(found, CategoryDto.class);
     }
 
 }
