@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 public enum UserRole {
     ADMIN(Set.of(UserPermission.TRANSACTION_READ, UserPermission.TRANSACTION_WRITE,
             UserPermission.USER_READ, UserPermission.USER_WRITE,
-            UserPermission.RATING_READ, UserPermission.RATING_WRITE)),
+            UserPermission.CATEGORY_READ, UserPermission.CATEGORY_WRITE)),
 
     USER(Set.of(UserPermission.TRANSACTION_READ, UserPermission.USER_READ,
-            UserPermission.RATING_READ, UserPermission.RATING_WRITE));
+            UserPermission.CATEGORY_READ, UserPermission.CATEGORY_WRITE));
 
     @Getter
     private final Set<UserPermission> permissions;
