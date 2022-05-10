@@ -6,8 +6,11 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,7 +21,7 @@ import java.util.Objects;
         name = "users",
         uniqueConstraints = {@UniqueConstraint(name = "user_email_unique", columnNames = "email")}
 )
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -89,6 +92,36 @@ public class User {
                 ", userRole=" + userRole + '\'' +
                 ", userStatus=" + userStatus +
                 '}';
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return userRole.getAuthorities();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return userStatus.equals(UserStatus.ACTIVE);
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return userStatus.equals(UserStatus.ACTIVE);
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return userStatus.equals(UserStatus.ACTIVE);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return userStatus.equals(UserStatus.ACTIVE);
     }
 }
 
