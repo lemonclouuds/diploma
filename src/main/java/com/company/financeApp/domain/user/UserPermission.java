@@ -5,8 +5,8 @@ public enum UserPermission {
     USER_WRITE("user:write"),
     TRANSACTION_READ("transaction:read"),
     TRANSACTION_WRITE("transaction:write"),
-    RATING_READ("rating:write"),
-    RATING_WRITE("rating:read");
+    CATEGORY_READ("category:write"),
+    CATEGORY_WRITE("category:read");
 
     private final String permission;
 
