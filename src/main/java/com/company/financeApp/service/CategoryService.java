@@ -1,8 +1,10 @@
 package com.company.financeApp.service;
 
 import com.company.financeApp.domain.category.Category;
+import com.company.financeApp.domain.category.CategoryType;
 import com.company.financeApp.domain.dto.CategoryDto;
 import com.company.financeApp.domain.user.User;
+import com.company.financeApp.domain.user.UserRole;
 import com.company.financeApp.exception.EntityAlreadyExistsException;
 import com.company.financeApp.helper.MapperHelper;
 import com.company.financeApp.repository.CategoryRepository;
@@ -47,11 +49,17 @@ public class CategoryService {
         Category category = modelMapper.map(categoryDto, Category.class);
         if (!categoryRepository.existsById(categoryDto.getId())) {
             User user = userService.findById(categoryDto.getUserId());
+            CategoryType type = CategoryType.ADDED_BY_USER;
+            if (user.getUserRole().equals(UserRole.ADMIN)) {
+                type = CategoryType.DEFAULT;
+            }
+            category.setCategoryType(type);
             category.setUser(user);
             category.setTransactions(new ArrayList<>());
+
             categoryRepository.save(category);
         } else {
-            throw new EntityAlreadyExistsException(String.format("User with id[%d] already exists",
+            throw new EntityAlreadyExistsException(String.format("Category[%d] already exists",
                     categoryDto.getId()));
         }
         return categoryDto;
@@ -91,7 +99,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoryDto getUserCategoryById(Long userId, Long categoryId) {
+    public CategoryDto findUserCategoryById(Long userId, Long categoryId) {
         Category found = userService.findById(userId).getCategories()
                 .stream()
                 .filter(category -> categoryId.equals(category.getId()))
@@ -99,6 +107,12 @@ public class CategoryService {
                 .orElseThrow(
                         () -> new EntityNotFoundException(String.format(CATEGORY_WITH_ID_NOT_FOUND, categoryId)));
         return modelMapper.map(found, CategoryDto.class);
+    }
+
+    @Transactional
+    public List<CategoryDto> findAddedByUserCategories(Long userId) {
+        return MapperHelper.mapList(categoryRepository.findCategoriesByCategoryTypeAndAndUserId(CategoryType.ADDED_BY_USER, userId),
+                CategoryDto.class);
     }
 
 }
