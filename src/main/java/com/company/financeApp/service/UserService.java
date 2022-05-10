@@ -7,6 +7,9 @@ import com.company.financeApp.helper.MapperHelper;
 import com.company.financeApp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     private static ModelMapper modelMapper = new ModelMapper();
 
     private final String USER_WITH_ID_NOT_FOUND = "User[%d] not found";
@@ -76,5 +79,12 @@ public class UserService {
         for (Long id : ids) {
             deleteById(id);
         }
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findUserByEmail(username).orElseThrow(
+                () -> new UsernameNotFoundException(String.format("User with email[%s] not found", username))
+        );
     }
 }
