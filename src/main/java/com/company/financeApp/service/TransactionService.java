@@ -1,9 +1,11 @@
 package com.company.financeApp.service;
 
 import com.company.financeApp.domain.Transaction;
+import com.company.financeApp.domain.category.Category;
 import com.company.financeApp.domain.dto.TransactionDto;
+import com.company.financeApp.domain.user.User;
+import com.company.financeApp.exception.EntityAlreadyExistsException;
 import com.company.financeApp.helper.MapperHelper;
-import com.company.financeApp.repository.CategoryRepository;
 import com.company.financeApp.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -21,8 +23,8 @@ import static com.company.financeApp.constants.ExceptionMessage.TRANSACTION_WITH
 public class TransactionService {
     private static ModelMapper modelMapper = new ModelMapper();
 
-    private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
+    private final CategoryService categoryService;
 
     private final UserService userService;
 
@@ -40,12 +42,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public List<Transaction> findAllByCategoryId(Long categoryId) {
-        return transactionRepository.findAllByCategory_Id(categoryId);
-    }
-
-    @Transactional
-    public List<TransactionDto> findTransactionsDtoByCategoryId(Long categoryId) {
+    public List<TransactionDto> findAllByCategoryId(Long categoryId) {
         return MapperHelper.mapList(transactionRepository.findAllByCategory_Id(categoryId), TransactionDto.class);
     }
 
@@ -63,6 +60,38 @@ public class TransactionService {
                 .orElseThrow(
                         () -> new EntityNotFoundException(String.format(TRANSACTION_WITH_ID_NOT_FOUND, transactionId)));
         return modelMapper.map(found, TransactionDto.class);
+    }
+
+    @Transactional
+    public TransactionDto create(TransactionDto transactionDto) {
+        Transaction transaction = modelMapper.map(transactionDto, Transaction.class);
+        if (!transactionRepository.existsById(transactionDto.getId())) {
+            User user = userService.findById(transactionDto.getUserId());
+            Category category = categoryService.findById(transactionDto.getCategoryId());
+            transaction.setUser(user);
+            transaction.setCategory(category);
+            transactionRepository.save(transaction);
+        } else {
+            throw new EntityAlreadyExistsException(String.format("Transaction with id[%d] already exists",
+                    transactionDto.getId()));
+        }
+        return transactionDto;
+    }
+
+    @Transactional
+    public TransactionDto update(Long transactionId, TransactionDto transactionDto) {
+        Transaction transaction = modelMapper.map(transactionDto, Transaction.class);
+        transaction.setId(transactionId);
+        if (transactionRepository.existsById(transactionId)) {
+            User user = userService.findById(transactionDto.getUserId());
+            Category category = categoryService.findById(transactionDto.getCategoryId());
+            transaction.setUser(user);
+            transaction.setCategory(category);
+            transactionRepository.save(transaction);
+        } else {
+            throw new EntityNotFoundException(String.format(TRANSACTION_WITH_ID_NOT_FOUND, transactionId));
+        }
+        return transactionDto;
     }
 
     @Transactional
