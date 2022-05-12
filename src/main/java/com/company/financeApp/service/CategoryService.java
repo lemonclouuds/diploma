@@ -8,7 +8,6 @@ import com.company.financeApp.domain.user.UserRole;
 import com.company.financeApp.exception.EntityAlreadyExistsException;
 import com.company.financeApp.helper.MapperHelper;
 import com.company.financeApp.repository.CategoryRepository;
-import com.company.financeApp.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -27,8 +26,6 @@ public class CategoryService {
     private static final ModelMapper modelMapper = new ModelMapper();
 
     private final CategoryRepository categoryRepository;
-    private final TransactionRepository transactionRepository;
-
     private final UserService userService;
 
     public List<CategoryDto> findAll() {
@@ -111,7 +108,13 @@ public class CategoryService {
 
     @Transactional
     public List<CategoryDto> findAddedByUserCategories(Long userId) {
-        return MapperHelper.mapList(categoryRepository.findCategoriesByCategoryTypeAndAndUserId(CategoryType.ADDED_BY_USER, userId),
+        return MapperHelper.mapList(categoryRepository.findCategoriesByCategoryTypeAndUserId(CategoryType.ADDED_BY_USER, userId),
+                CategoryDto.class);
+    }
+
+    @Transactional
+    public List<CategoryDto> findDefaultCategories(Long userId) {
+        return MapperHelper.mapList(categoryRepository.findCategoriesByCategoryType(CategoryType.DEFAULT),
                 CategoryDto.class);
     }
 
