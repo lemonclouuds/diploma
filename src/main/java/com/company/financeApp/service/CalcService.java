@@ -16,16 +16,15 @@ public class CalcService {
     private final CategoryService categoryService;
     private final TransactionService transactionService;
 
-    public Map<Long, Double> calculateUserExpensesByCategory(Long userId) {
+    private List<CategoryDto> combineDefaultAndAddedByUserCategories(Long userId) {
         List<CategoryDto> categoryDtoList = categoryService.findAllByUserId(userId);
         List<CategoryDto> defaultCategories = categoryService.findDefaultCategories(userId);
-        for (CategoryDto category : defaultCategories) {
-            categoryDtoList.add(category);
-        }
-        return calcUserTransactionsValueByCategoryFromLastMonth(categoryDtoList, userId);
+        categoryDtoList.addAll(defaultCategories);
+        return categoryDtoList;
     }
 
-    private Map<Long, Double> calcUserTransactionsValueByCategoryFromLastMonth(List<CategoryDto> categories, Long userId) { //byLastMonth?
+    public Map<Long, Double> calcUserTransactionsValueByCategoryFromLastMonth(Long userId) { //byLastMonth?
+        List<CategoryDto> categories = combineDefaultAndAddedByUserCategories(userId);
         Map<Long, Double> res = new HashMap<>();
         for (CategoryDto category : categories) {
             List<TransactionDto> transactions = transactionService.findAllByUserIdAndCategoryIdFromLastMonth(userId, category.getId()); //and userId
@@ -41,7 +40,4 @@ public class CalcService {
         }
         return res;
     }
-
-
-
 }
