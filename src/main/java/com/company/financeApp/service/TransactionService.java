@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -107,5 +108,17 @@ public class TransactionService {
             deleteById(id);
         }
     }
+
+    @Transactional
+    public List<TransactionDto> findAllByUserIdAndCategoryIdFromLastMonth(Long userId, Long categoryId) {
+        LocalDate currentDate = LocalDate.now();
+        int year = currentDate.getYear();
+        int month = currentDate.minusMonths(1L).getMonthValue();
+        int day = currentDate.getDayOfMonth();
+        List<Transaction> found = transactionRepository
+                .findAllByUserIdAndDateGreaterThanEqualAndDateLessThanEqualAndCategory_Id(userId, LocalDate.of(year, month, day), currentDate, categoryId);
+        return MapperHelper.mapList(found, TransactionDto.class);
+    }
+
 
 }

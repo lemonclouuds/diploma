@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Objects;
 
 @Data
@@ -25,8 +26,12 @@ public class Transaction {
     @Column(name = "name", nullable = false)
     private String name;
 
+    //TODO BigDecimal value;
     @Column(name = "value", nullable = false)
     private Double value;
+
+    @Column(name = "date", nullable = false)
+    private LocalDate date;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
     @JoinColumn(name = "user_id")
@@ -38,9 +43,10 @@ public class Transaction {
     @JsonBackReference("category")
     private Category category;
 
-    public Transaction(String name, Double value, User user, Category category) {
+    public Transaction(String name, Double value, LocalDate date, User user, Category category) {
         this.name = name;
         this.value = value;
+        this.date = date;
         this.user = user;
         this.category = category;
     }
