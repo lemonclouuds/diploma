@@ -3,16 +3,19 @@ package com.company.financeApp.controllers;
 import com.company.financeApp.domain.dto.CategoryDto;
 import com.company.financeApp.domain.dto.TransactionDto;
 import com.company.financeApp.domain.dto.UserDto;
+import com.company.financeApp.service.CalcService;
 import com.company.financeApp.service.CategoryService;
 import com.company.financeApp.service.TransactionService;
 import com.company.financeApp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,16 +23,17 @@ public class UserController {
     private final UserService userService;
     private final CategoryService categoryService;
     private final TransactionService transactionService;
+    private final CalcService calcService;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @GetMapping("/users")
-    //@PreAuthorize("hasAuthority('user:read')")
+    @PreAuthorize("hasAuthority('user:read')")
     public ResponseEntity<List<UserDto>> getAll() {
         return ResponseEntity.ok(userService.findAll());
     }
 
     @PostMapping("/users")
-    //@PreAuthorize("hasAuthority('user:write')")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<UserDto> create(@RequestBody UserDto userDto) {
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return ResponseEntity
@@ -38,19 +42,19 @@ public class UserController {
     }
 
     @GetMapping("/users/{userId}")
-    //@PreAuthorize("hasAuthority('user:read')")
+    @PreAuthorize("hasAuthority('user:read')")
     public ResponseEntity<UserDto> getById(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.findDtoById(userId));
     }
 
     @PutMapping("/users/{userId}")
-    //@PreAuthorize("hasAuthority('user:write')")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<UserDto> update(@PathVariable Long userId, @RequestBody UserDto userDto) {
         return ResponseEntity.ok(userService.update(userId, userDto));
     }
 
     @DeleteMapping("/users/{userId}")
-    //@PreAuthorize("hasAuthority('user:write')")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<?> delete(@PathVariable Long userId) {
         userService.deleteById(userId);
         return ResponseEntity
@@ -64,13 +68,13 @@ public class UserController {
     }*/
 
     @GetMapping("/users/{userId}/categories/custom")
-    //@PreAuthorize("hasAuthority('category:read')")
+    @PreAuthorize("hasAuthority('category:read')")
     public ResponseEntity<List<CategoryDto>> getUserCustomCategories(@PathVariable Long userId) {
         return ResponseEntity.ok(categoryService.findAddedByUserCategories(userId));
     }
 
     @PostMapping("/users/{userId}/categories")
-    //@PreAuthorize("hasAuthority('category:write')")
+    @PreAuthorize("hasAuthority('category:write')")
     public ResponseEntity<CategoryDto> createCategory(@PathVariable Long userId, @RequestBody CategoryDto categoryDto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -135,6 +139,8 @@ public class UserController {
                 .body(String.format("Transaction[%d] was deleted", transactionId));
     }
 
-    //users/id/categories/id/transactions/id
-    //users/id//transactions/id -> button/screen "all transactions"
+    @GetMapping("/users/{userId}/overview")
+    public ResponseEntity<Map<Long, Double>> getOverview(@PathVariable Long userId) {
+        return ResponseEntity.ok(calcService.calcUserTransactionsValueByCategoryFromLastMonth(userId));
+    }
 }
