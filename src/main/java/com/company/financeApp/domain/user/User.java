@@ -58,6 +58,11 @@ public class User implements UserDetails {
     @JsonManagedReference("user")
     private List<Transaction> transactions;
 
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference("user")
+    private List<Transaction> goals;
+
     public User(String firstName, String lastName, String email,
                 String password, UserRole userRole, UserStatus userStatus) {
         this.firstName = firstName;

@@ -21,7 +21,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-    private static ModelMapper modelMapper = new ModelMapper();
+    private static final ModelMapper modelMapper = new ModelMapper();
 
     private final String USER_WITH_ID_NOT_FOUND = "User[%d] not found";
 
@@ -45,8 +45,8 @@ public class UserService implements UserDetailsService {
         User user = modelMapper.map(userDto, User.class);
         if (!userRepository.existsById(userDto.getId())) {
             user.setTransactions(new ArrayList<>());
-            //maybe pull default categories from db?
-            user.setCategories(new ArrayList<>()); //? what about default categories?
+            user.setGoals(new ArrayList<>());
+            user.setCategories(new ArrayList<>());
             userRepository.save(user);
         } else {
             throw new EntityAlreadyExistsException(String.format("User with id[%d] already exists",
